@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Sirenix.OdinInspector.Editor;
 using UnityEngine;
 using UnityEditor;
 
@@ -9,7 +10,7 @@ namespace UnityEditor.UI.Windows {
     
     [CustomEditor(typeof(WindowLayoutPreferences), editorForChildClasses: true)]
     [CanEditMultipleObjects]
-    public class WindowSystemWindowLayoutPreferencesEditor : Editor {
+    public class WindowSystemWindowLayoutPreferencesEditor : OdinEditor {
 
         SerializedProperty m_UiScaleMode;
         SerializedProperty m_ScaleFactor;

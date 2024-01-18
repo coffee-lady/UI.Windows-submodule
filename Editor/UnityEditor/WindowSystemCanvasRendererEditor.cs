@@ -1,12 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Sirenix.OdinInspector.Editor;
 using UnityEngine;
 using UnityEditor;
 
 namespace UnityEditor.UI.Windows {
 
     [CustomEditor(typeof(CanvasRenderer), editorForChildClasses: true)]
-    public class WindowSystemCanvasRendererEditor : Editor {
+    public class WindowSystemCanvasRendererEditor : OdinEditor {
 
         public override void OnInspectorGUI() {
 

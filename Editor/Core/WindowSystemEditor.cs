@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Sirenix.OdinInspector.Editor;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.U2D;
@@ -12,7 +13,7 @@ namespace UnityEditor.UI.Windows {
 
     [CustomEditor(typeof(WindowSystem), editorForChildClasses: true)]
     [CanEditMultipleObjects]
-    public class WindowSystemEditor : Editor {
+    public class WindowSystemEditor : OdinEditor {
 
         public SerializedProperty audio;
         public SerializedProperty breadcrumbs;

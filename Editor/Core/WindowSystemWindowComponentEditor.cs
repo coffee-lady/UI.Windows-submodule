@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Sirenix.OdinInspector.Editor;
 using UnityEngine;
 using UnityEditor;
 
@@ -9,7 +10,7 @@ namespace UnityEditor.UI.Windows {
 
     [CustomEditor(typeof(WindowComponent), editorForChildClasses: true)]
     [CanEditMultipleObjects]
-    public class WindowSystemWindowComponentEditor : Editor {
+    public class WindowSystemWindowComponentEditor : OdinEditor {
 
         private SerializedProperty createPool;
         
@@ -360,7 +361,7 @@ namespace UnityEditor.UI.Windows {
 
             GUILayout.Space(10f);
 
-            GUILayoutExt.DrawFieldsBeneath(this.serializedObject, typeof(WindowComponent));
+            GUILayoutExt.DrawFieldsBeneath(this.Tree, typeof(WindowComponent));
             
             this.serializedObject.ApplyModifiedProperties();
 

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Sirenix.OdinInspector.Editor;
 using UnityEngine;
 using UnityEditor;
 
@@ -9,7 +10,7 @@ namespace UnityEditor.UI.Windows {
     using UnityEngine.UI.Windows.Modules;
 
     [CustomEditor(typeof(WindowSystemEvents))]
-    public class WindowSystemEventsEditor : Editor {
+    public class WindowSystemEventsEditor : OdinEditor {
 
         public void OnEnable() {
 

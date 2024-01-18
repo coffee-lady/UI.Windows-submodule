@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.CodeDom.Compiler;
+using Sirenix.OdinInspector.Editor;
 
 namespace UnityEditor.UI.Windows {
     
@@ -211,28 +212,33 @@ namespace UnityEditor.UI.Windows {
 
 	    }
 
-	    public static void DrawFieldsBeneath(SerializedObject serializedObject, System.Type baseType) {
-		    
-		    var iter = serializedObject.GetIterator();
-		    iter.NextVisible(true);
-		    System.Type baseClassType = null;
-		    do {
+	    public static void DrawFieldsBeneath(PropertyTree propertyTree, Type baseType)
+	    {
+		    propertyTree.BeginDraw(false);
 
-			    if (EditorHelpers.IsFieldOfTypeBeneath(serializedObject.targetObject.GetType(), baseType, iter.propertyPath) == true) {
+		    Type baseClassType = null;
 
-				    var newBaseClassType = EditorHelpers.GetFieldViaPath(serializedObject.targetObject.GetType(), iter.propertyPath).DeclaringType;
-				    if (newBaseClassType != null && newBaseClassType != baseClassType) {
-                        
-					    GUILayoutExt.DrawSplitter(newBaseClassType.Name);
+		    foreach (InspectorProperty property in propertyTree.RootProperty.Children)
+		    {
+			    Type objType = propertyTree.UnitySerializedObject.targetObject.GetType();
+			    string unityPropertyPath = property.UnityPropertyPath;
+
+			    if (EditorHelpers.IsFieldOfTypeBeneath(objType, baseType, unityPropertyPath))
+			    {
+				    Type newBaseClassType = EditorHelpers
+					    .GetFieldViaPath(objType, unityPropertyPath).DeclaringType;
+
+				    if (newBaseClassType != null && newBaseClassType != baseClassType)
+				    {
+					    DrawSplitter(newBaseClassType.Name);
 					    baseClassType = newBaseClassType;
-                        
 				    }
-				    EditorGUILayout.PropertyField(iter);
 
+				    property.Draw();
 			    }
+		    }
 
-		    } while (iter.NextVisible(false) == true);
-		    
+		    propertyTree.EndDraw();
 	    }
 	    
 	    public static void DrawSplitter(string label) {
@@ -1235,7 +1241,7 @@ namespace UnityEditor.UI.Windows {
 
     }
 
-    public class PopupWindowAnim : EditorWindow {
+    public class PopupWindowAnim : OdinEditorWindow {
 
 		private const float defaultWidth = 150;
 		private const float defaultHeight = 250;
