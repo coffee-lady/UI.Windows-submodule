@@ -241,6 +241,30 @@ namespace UnityEditor.UI.Windows {
 		    propertyTree.EndDraw();
 	    }
 	    
+	    public static void DrawFieldsBeneath(SerializedObject serializedObject, System.Type baseType) {
+		    
+		    var iter = serializedObject.GetIterator();
+		    iter.NextVisible(true);
+		    System.Type baseClassType = null;
+		    do {
+
+			    if (EditorHelpers.IsFieldOfTypeBeneath(serializedObject.targetObject.GetType(), baseType, iter.propertyPath) == true) {
+
+				    var newBaseClassType = EditorHelpers.GetFieldViaPath(serializedObject.targetObject.GetType(), iter.propertyPath).DeclaringType;
+				    if (newBaseClassType != null && newBaseClassType != baseClassType) {
+                        
+					    GUILayoutExt.DrawSplitter(newBaseClassType.Name);
+					    baseClassType = newBaseClassType;
+                        
+				    }
+				    EditorGUILayout.PropertyField(iter);
+
+			    }
+
+		    } while (iter.NextVisible(false) == true);
+		    
+	    }
+	    
 	    public static void DrawSplitter(string label) {
 
 		    var splitted = label.Split('`');

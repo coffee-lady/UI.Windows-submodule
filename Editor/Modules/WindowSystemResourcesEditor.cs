@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Sirenix.OdinInspector.Editor;
 using UnityEngine;
 using UnityEditor;
 
@@ -11,7 +10,7 @@ namespace UnityEditor.UI.Windows {
     using UnityEngine.UI.Windows.Modules;
 
     [CustomEditor(typeof(WindowSystemResources))]
-    public class WindowSystemResourcesEditor : OdinEditor {
+    public class WindowSystemResourcesEditor : Editor {
 
         private int selectedTabIndex;
         private Vector2 tabScrollPosition;

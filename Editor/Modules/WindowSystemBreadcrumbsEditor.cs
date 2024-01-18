@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Sirenix.OdinInspector.Editor;
 using UnityEngine;
 using UnityEditor;
 
@@ -10,7 +9,7 @@ namespace UnityEditor.UI.Windows {
     using UnityEngine.UI.Windows.Modules;
 
     [CustomEditor(typeof(WindowSystemBreadcrumbs))]
-    public class WindowSystemBreadcrumbsEditor : OdinEditor {
+    public class WindowSystemBreadcrumbsEditor : Editor {
 
         private int selectedTabIndex;
         private Vector2 tabScrollPosition;

@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Sirenix.OdinInspector.Editor;
 using UnityEngine;
 using UnityEditor;
 
@@ -10,7 +9,7 @@ namespace UnityEditor.UI.Windows {
     using UnityEngine.UI.Windows.Modules;
 
     [CustomEditor(typeof(UnityEngine.UI.Windows.Utilities.Tweener))]
-    public class WindowSystemTweenerEditor : OdinEditor {
+    public class WindowSystemTweenerEditor : Editor {
 
         public void OnEnable() {
 
