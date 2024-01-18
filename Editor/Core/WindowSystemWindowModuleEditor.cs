@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Sirenix.OdinInspector.Editor;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -10,7 +11,7 @@ namespace UnityEditor.UI.Windows {
     
     [CustomEditor(typeof(WindowModule), editorForChildClasses: true)]
     [CanEditMultipleObjects]
-    public class WindowSystemWindowModuleEditor : Editor {
+    public class WindowSystemWindowModuleEditor : OdinEditor {
 
         private SerializedProperty createPool;
         
