@@ -4,26 +4,27 @@ using Sirenix.OdinInspector;
 namespace UnityEngine.UI.Windows.Modules
 {
     [Serializable]
-    public class AlphaAnimationParameters : AnimationParameters
+    public class ColorAnimationParameters : AnimationParameters
     {
-        [ReadOnly] [SerializeField] private AlphaState currentState = new();
+        [ReadOnly] [SerializeField] private ColorState currentState = new();
 
-        [Space(10f)] public CanvasGroup canvasGroup;
-        public AlphaState resetState = new() {alpha = 0f};
-        public AlphaState shownState = new() {alpha = 1f};
-        public AlphaState hiddenState = new() {alpha = 0f};
+        [Space(10f)] public Graphic graphic;
+
+        public ColorState resetState = new() {color = Color.white};
+        public ColorState shownState = new() {color = Color.white};
+        public ColorState hiddenState = new() {color = Color.white};
 
         public override State LerpState(State from, State to, float value)
         {
-            var toState = (AlphaState) to;
+            var toState = (ColorState) to;
             if (from != null)
             {
-                var fromState = (AlphaState) from;
-                currentState.alpha = Mathf.Lerp(fromState.alpha, toState.alpha, value);
+                var fromState = (ColorState) from;
+                currentState.color = Color.Lerp(fromState.color, toState.color, value);
             }
             else
             {
-                currentState.alpha = Mathf.Lerp(currentState.alpha, toState.alpha, value);
+                currentState.color = Color.Lerp(currentState.color, toState.color, value);
             }
 
             return currentState;
@@ -31,10 +32,11 @@ namespace UnityEngine.UI.Windows.Modules
 
         public override void ApplyState(State state)
         {
-            var toState = (AlphaState) state;
-            if (canvasGroup != null)
+            var toState = (ColorState) state;
+
+            if (graphic != null)
             {
-                canvasGroup.alpha = toState.alpha;
+                graphic.color = toState.color;
             }
 
             currentState.CopyFrom(state);
@@ -42,7 +44,7 @@ namespace UnityEngine.UI.Windows.Modules
 
         public override State CreateState()
         {
-            return PoolClass<AlphaState>.Spawn();
+            return PoolClass<ColorState>.Spawn();
         }
 
         public override State GetCurrentState()
@@ -66,20 +68,20 @@ namespace UnityEngine.UI.Windows.Modules
         }
 
         [Serializable]
-        public class AlphaState : State
+        public class ColorState : State
         {
-            [Range(0f, 1f)] public float alpha;
+            public Color color;
 
             public override void CopyFrom(State other)
             {
-                var _other = (AlphaState) other;
-                alpha = _other.alpha;
+                var otherColorState = (ColorState) other;
+                color = otherColorState.color;
             }
 
             public override void Recycle()
             {
-                alpha = default;
-                PoolClass<AlphaState>.Recycle(this);
+                color = default;
+                PoolClass<ColorState>.Recycle(this);
             }
         }
     }

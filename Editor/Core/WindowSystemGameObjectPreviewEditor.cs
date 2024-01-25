@@ -1,95 +1,85 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.UI.Windows;
 
-namespace UnityEditor.UI.Windows {
-
+namespace UnityEditor.UI.Windows
+{
     [CustomPreview(typeof(GameObject))]
-    public class WindowSystemGameObjectPreviewEditor : ObjectPreview {
-
+    public class WindowSystemGameObjectPreviewEditor : ObjectPreview
+    {
         private static Editor editor;
         private static Object obj;
 
-        public override void Initialize(Object[] targets) {
-            
+        public override void Initialize(Object[] targets)
+        {
             base.Initialize(targets);
-            
-            this.ValidateEditor(targets);
-            
+
+            ValidateEditor(targets);
         }
 
-        private void ValidateEditor(Object[] targets) {
-
-            if (targets.Length > 1) {
-                
-                this.Reset();
+        private void ValidateEditor(Object[] targets)
+        {
+            if (targets.Length > 1)
+            {
+                Reset();
                 return;
-
             }
-            
-            var targetGameObject = this.target as GameObject;
-            if (targetGameObject == null) {
-                
-                this.Reset();
+
+            var targetGameObject = target as GameObject;
+            if (targetGameObject == null)
+            {
+                Reset();
                 return;
-                
             }
 
-            var hasPreview = targetGameObject.GetComponent<UnityEngine.UI.Windows.IHasPreview>();
-            if (hasPreview == null) {
-
-                this.Reset();
+            var hasPreview = targetGameObject.GetComponent<IHasPreview>();
+            if (hasPreview == null)
+            {
+                Reset();
                 return;
-
             }
 
-            if (WindowSystemGameObjectPreviewEditor.editor == null || WindowSystemGameObjectPreviewEditor.obj != targetGameObject) {
-                
-                WindowSystemGameObjectPreviewEditor.obj = targetGameObject;
-                WindowSystemGameObjectPreviewEditor.editor = Editor.CreateEditor((Object)hasPreview);
-                
+            if (editor == null || obj != targetGameObject)
+            {
+                obj = targetGameObject;
+                editor = Editor.CreateEditor((Object) hasPreview);
             }
-            
         }
 
-        private void Reset() {
-
-            WindowSystemGameObjectPreviewEditor.obj = null;
-            WindowSystemGameObjectPreviewEditor.editor = null;
-
+        private void Reset()
+        {
+            obj = null;
+            editor = null;
         }
-        
-        public override GUIContent GetPreviewTitle() {
 
-            if (WindowSystemGameObjectPreviewEditor.editor != null) {
-
-                return WindowSystemGameObjectPreviewEditor.editor.GetPreviewTitle();
-
+        public override GUIContent GetPreviewTitle()
+        {
+            if (editor != null)
+            {
+                return editor.GetPreviewTitle();
             }
-            
+
             return base.GetPreviewTitle();
-            
         }
 
-        public override bool HasPreviewGUI() {
-            
-            return WindowSystemGameObjectPreviewEditor.editor != null && WindowSystemGameObjectPreviewEditor.editor.HasPreviewGUI();
-
-        }
-        
-        public override void OnInteractivePreviewGUI(Rect r, GUIStyle background) {
-            
-            if (WindowSystemGameObjectPreviewEditor.editor != null) WindowSystemGameObjectPreviewEditor.editor.OnInteractivePreviewGUI(r, background);
-            
+        public override bool HasPreviewGUI()
+        {
+            return editor != null && editor.HasPreviewGUI();
         }
 
-        public override void OnPreviewGUI(Rect r, GUIStyle background) {
-            
-            if (WindowSystemGameObjectPreviewEditor.editor != null) WindowSystemGameObjectPreviewEditor.editor.OnPreviewGUI(r, background);
-            
+        public override void OnInteractivePreviewGUI(Rect r, GUIStyle background)
+        {
+            if (editor != null)
+            {
+                editor.OnInteractivePreviewGUI(r, background);
+            }
         }
 
+        public override void OnPreviewGUI(Rect r, GUIStyle background)
+        {
+            if (editor != null)
+            {
+                editor.OnPreviewGUI(r, background);
+            }
+        }
     }
-
 }

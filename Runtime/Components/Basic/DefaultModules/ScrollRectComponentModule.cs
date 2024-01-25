@@ -1,41 +1,49 @@
-﻿namespace UnityEngine.UI.Windows {
+﻿using UnityEngine.EventSystems;
 
-    public class ScrollRectComponentModule : ButtonComponentModule, UnityEngine.EventSystems.IInitializePotentialDragHandler, UnityEngine.EventSystems.IBeginDragHandler, UnityEngine.EventSystems.IDragHandler, UnityEngine.EventSystems.IEndDragHandler {
-
+namespace UnityEngine.UI.Windows
+{
+    public class ScrollRectComponentModule : ButtonComponentModule, IInitializePotentialDragHandler, IBeginDragHandler,
+        IDragHandler, IEndDragHandler
+    {
         public ScrollRect scrollRect;
 
-        public override void ValidateEditor() {
-            
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            if (scrollRect != null)
+            {
+                scrollRect.OnBeginDrag(eventData);
+            }
+        }
+
+        public void OnDrag(PointerEventData eventData)
+        {
+            if (scrollRect != null)
+            {
+                scrollRect.OnDrag(eventData);
+            }
+        }
+
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            if (scrollRect != null)
+            {
+                scrollRect.OnEndDrag(eventData);
+            }
+        }
+
+        public void OnInitializePotentialDrag(PointerEventData eventData)
+        {
+            if (scrollRect != null)
+            {
+                scrollRect.OnInitializePotentialDrag(eventData);
+            }
+        }
+
+        public override void ValidateEditor()
+        {
             base.ValidateEditor();
-            
-            this.scrollRect = this.GetComponentInParent<ScrollRect>();
-            
-        }
 
-        public void OnInitializePotentialDrag(UnityEngine.EventSystems.PointerEventData eventData) {
-            
-            if (this.scrollRect != null) this.scrollRect.OnInitializePotentialDrag(eventData);
-
+            scrollRect = windowComponent.GetComponentInParent<ScrollRect>();
         }
-        
-        public void OnBeginDrag(UnityEngine.EventSystems.PointerEventData eventData) {
-            
-            if (this.scrollRect != null) this.scrollRect.OnBeginDrag(eventData);
-            
-        }
-
-        public void OnDrag(UnityEngine.EventSystems.PointerEventData eventData) {
-            
-            if (this.scrollRect != null) this.scrollRect.OnDrag(eventData);
-            
-        }
-
-        public void OnEndDrag(UnityEngine.EventSystems.PointerEventData eventData) {
-            
-            if (this.scrollRect != null) this.scrollRect.OnEndDrag(eventData);
-            
-        }
-
     }
-    
 }

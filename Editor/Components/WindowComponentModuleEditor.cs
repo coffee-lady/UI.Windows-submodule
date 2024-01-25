@@ -1,23 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
+﻿using Sirenix.OdinInspector.Editor;
+using UnityEngine.UI.Windows;
 
-namespace UnityEditor.UI.Windows {
-
-    using UnityEngine.UI.Windows;
-
-    [CustomEditor(typeof(WindowComponentModule), editorForChildClasses: true)]
+namespace UnityEditor.UI.Windows
+{
+    [CustomEditor(typeof(WindowComponentModule), true)]
     [CanEditMultipleObjects]
-    public class WindowComponentModuleEditor : Editor {
-
-        public void OnEnable() {
-
-            var comp = (Component)this.target;
-            comp.hideFlags = HideFlags.HideInInspector;
-
-        }
-
+    public class WindowComponentModuleEditor : OdinEditor
+    {
     }
-
 }

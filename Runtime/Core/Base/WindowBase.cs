@@ -1,304 +1,306 @@
-﻿namespace UnityEngine.UI.Windows {
+﻿using System;
+using Sirenix.OdinInspector;
+using UnityEngine.UI.Windows.Modules;
+using UnityEngine.UI.Windows.Utilities;
 
-    using Modules;
-    
-    public enum FocusState {
-
+namespace UnityEngine.UI.Windows
+{
+    public enum FocusState
+    {
         None,
         Focused,
-        Unfocused,
-
+        Unfocused
     }
 
-    public abstract class WindowBase : WindowObject, IHasPreview {
+    public abstract class WindowBase : WindowObject, IHasPreview
+    {
+        [TabGroup("Basic")] public WindowPreferences preferences = WindowPreferences.Default;
+        [TabGroup("Modules")] public WindowModules modules = new();
 
-        public WindowPreferences preferences = WindowPreferences.Default;
-        public WindowModules modules = new WindowModules();
+        [HideInInspector] public int identifier;
+        [HideInInspector] public int windowSourceId;
 
-        public int identifier;
-        public int windowSourceId;
-        
         [HideInInspector] public Camera workCamera;
 
         private float currentDepth;
         private float currentZDepth;
         private int currentCanvasDepth;
-        
+
         private FocusState focusState;
 
-        public virtual void OnParametersPass() {
+        public virtual void OnParametersPass()
+        {
         }
-        
-        public virtual void OnEmptyPass() {}
 
-        public FocusState GetFocusState() => this.focusState;
+        public virtual void OnEmptyPass()
+        {
+        }
 
-        internal override void OnDeInitInternal() {
+        public FocusState GetFocusState()
+        {
+            return focusState;
+        }
 
-            this.modules.Unload();
-            
+        internal override void OnDeInitInternal()
+        {
+            modules.Unload();
+
             base.OnDeInitInternal();
-            
         }
 
-        public void SetAsPerspective() {
-
-            this.preferences.cameraMode = UIWSCameraMode.Perspective;
-            this.ApplyCamera();
-
+        public void SetAsPerspective()
+        {
+            preferences.cameraMode = UIWSCameraMode.Perspective;
+            ApplyCamera();
         }
 
-        public void SetAsOrthographic() {
-
-            this.preferences.cameraMode = UIWSCameraMode.Orthographic;
-            this.ApplyCamera();
-
+        public void SetAsOrthographic()
+        {
+            preferences.cameraMode = UIWSCameraMode.Orthographic;
+            ApplyCamera();
         }
 
-        public override void Hide(TransitionParameters parameters) {
-
+        public override void Hide(TransitionParameters parameters)
+        {
             parameters = parameters.ReplaceIgnoreTouch(true);
-            var cbParameters = parameters.ReplaceCallback(() => {
-
-                this.PushToPool();
+            TransitionParameters cbParameters = parameters.ReplaceCallback(() =>
+            {
+                PushToPool();
                 parameters.RaiseCallback();
-
             });
 
-            if (cbParameters.data.replaceDelay == true) {
-
-                var tweener = WindowSystem.GetTweener();
-                tweener.Add(this, cbParameters.data.delay, 0f, 0f).Tag(this).OnComplete((obj) => {
-                    
-                    base.Hide(cbParameters.ReplaceDelay(0f));
-
-                });
-
-            } else {
-
-                base.Hide(cbParameters);
-
-            }
-
-        }
-
-        public virtual int GetCanvasOrder() {
-
-            return 0;
-
-        }
-
-        public virtual Canvas GetCanvas() {
-
-            return null;
-
-        }
-
-        public void SetInitialParameters(InitialParameters parameters) {
-
+            if (cbParameters.data.replaceDelay)
             {
+                Tweener tweener = WindowSystem.GetTweener();
+                tweener.Add(this, cbParameters.data.delay, 0f, 0f).Tag(this).OnComplete(obj =>
+                {
+                    base.Hide(cbParameters.ReplaceDelay(0f));
+                });
+            }
+            else
+            {
+                base.Hide(cbParameters);
+            }
+        }
 
-                if (parameters.overrideLayer == true) this.preferences.layer = parameters.layer;
-                if (parameters.overrideSingleInstance == true) this.preferences.singleInstance = parameters.singleInstance;
+        public virtual int GetCanvasOrder()
+        {
+            return 0;
+        }
 
+        public virtual Canvas GetCanvas()
+        {
+            return null;
+        }
+
+        public void SetInitialParameters(InitialParameters parameters)
+        {
+            {
+                if (parameters.overrideLayer)
+                {
+                    preferences.layer = parameters.layer;
+                }
+
+                if (parameters.overrideSingleInstance)
+                {
+                    preferences.singleInstance = parameters.singleInstance;
+                }
             }
 
-            this.ApplyDepth();
-            this.ApplyCamera();
-
+            ApplyDepth();
+            ApplyCamera();
         }
 
-        internal void DoFocusTookInternal() {
+        internal void DoFocusTookInternal()
+        {
+            if (focusState == FocusState.Focused)
+            {
+                return;
+            }
 
-            if (this.focusState == FocusState.Focused) return;
-            this.focusState = FocusState.Focused;
+            focusState = FocusState.Focused;
 
-            this.DoSendFocusTook();
-
+            DoSendFocusTook();
         }
 
-        internal void DoFocusLostInternal() {
+        internal void DoFocusLostInternal()
+        {
+            if (focusState == FocusState.Unfocused)
+            {
+                return;
+            }
 
-            if (this.focusState == FocusState.Unfocused) return;
-            this.focusState = FocusState.Unfocused;
+            focusState = FocusState.Unfocused;
 
-            this.DoSendFocusLost();
-
+            DoSendFocusLost();
         }
 
-        internal override void OnHideEndInternal() {
-            
+        internal override void OnHideEndInternal()
+        {
             WindowSystem.RemoveWindow(this);
 
             base.OnHideEndInternal();
-            
         }
 
-        internal override void OnShowEndInternal() {
-
+        internal override void OnShowEndInternal()
+        {
             WindowSystem.SendFullCoverageOnShowEnd(this);
 
             base.OnShowEndInternal();
-
         }
 
-        internal override void OnShowBeginInternal() {
-
+        internal override void OnShowBeginInternal()
+        {
             WindowSystem.SendFocusOnShowBegin(this);
 
             base.OnShowBeginInternal();
-
         }
 
-        internal override void OnHideBeginInternal() {
-
+        internal override void OnHideBeginInternal()
+        {
             WindowSystem.SendFullCoverageOnHideBegin(this);
             WindowSystem.SendFocusOnHideBegin(this);
 
             base.OnHideBeginInternal();
-
         }
 
-        public float GetZDepth() {
-
-            return this.currentZDepth;
-
+        public float GetZDepth()
+        {
+            return currentZDepth;
         }
 
-        public float GetDepth() {
-
-            return this.currentDepth;
-
+        public float GetDepth()
+        {
+            return currentDepth;
         }
 
-        public int GetCanvasDepth() {
-
-            return this.currentCanvasDepth;
-
+        public int GetCanvasDepth()
+        {
+            return currentCanvasDepth;
         }
 
-        internal void ApplyCamera() {
-
-            var settings = WindowSystem.GetSettings();
-            if (this.preferences.cameraMode == UIWSCameraMode.UseSettings) {
-            
-                if (settings.camera.orthographicDefault == true) {
-                    
-                    this.ApplyCameraSettings(UIWSCameraMode.Orthographic);
-                    
-                } else {
-                    
-                    this.ApplyCameraSettings(UIWSCameraMode.Perspective);
-                    
+        internal void ApplyCamera()
+        {
+            WindowSystemSettings settings = WindowSystem.GetSettings();
+            if (preferences.cameraMode == UIWSCameraMode.UseSettings)
+            {
+                if (settings.camera.orthographicDefault)
+                {
+                    ApplyCameraSettings(UIWSCameraMode.Orthographic);
                 }
-                
+                else
+                {
+                    ApplyCameraSettings(UIWSCameraMode.Perspective);
+                }
+
                 return;
-                
             }
 
-            this.ApplyCameraSettings(this.preferences.cameraMode);
-
+            ApplyCameraSettings(preferences.cameraMode);
         }
 
-        private void ApplyCameraSettings(UIWSCameraMode mode) {
-            
-            var settings = WindowSystem.GetSettings();
-            switch (mode) {
-
+        private void ApplyCameraSettings(UIWSCameraMode mode)
+        {
+            WindowSystemSettings settings = WindowSystem.GetSettings();
+            switch (mode)
+            {
                 case UIWSCameraMode.Orthographic:
-                    this.workCamera.orthographic = true;
-                    this.workCamera.orthographicSize = settings.camera.orthographicSize;
-                    this.workCamera.nearClipPlane = settings.camera.orthographicNearClippingPlane;
-                    this.workCamera.farClipPlane = settings.camera.orthographicFarClippingPlane;
-                    if (settings.canvas.renderMode == RenderMode.ScreenSpaceOverlay) {
-                        this.workCamera.enabled = false;
+                    workCamera.orthographic = true;
+                    workCamera.orthographicSize = settings.camera.orthographicSize;
+                    workCamera.nearClipPlane = settings.camera.orthographicNearClippingPlane;
+                    workCamera.farClipPlane = settings.camera.orthographicFarClippingPlane;
+                    if (settings.canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+                    {
+                        workCamera.enabled = false;
                     }
+
                     break;
 
                 case UIWSCameraMode.Perspective:
-                    this.workCamera.orthographic = false;
-                    this.workCamera.fieldOfView = settings.camera.perspectiveSize;
-                    this.workCamera.nearClipPlane = settings.camera.perspectiveNearClippingPlane;
-                    this.workCamera.farClipPlane = settings.camera.perspectiveFarClippingPlane;
+                    workCamera.orthographic = false;
+                    workCamera.fieldOfView = settings.camera.perspectiveSize;
+                    workCamera.nearClipPlane = settings.camera.perspectiveNearClippingPlane;
+                    workCamera.farClipPlane = settings.camera.perspectiveFarClippingPlane;
                     break;
-
             }
-            
         }
 
-        public override void TurnOffRender() {
-            
+        public override void TurnOffRender()
+        {
             base.TurnOffRender();
-            
-            this.workCamera.enabled = false;
-            
+
+            workCamera.enabled = false;
         }
 
-        public override void TurnOnRender() {
-            
+        public override void TurnOnRender()
+        {
             base.TurnOnRender();
-            
-            var settings = WindowSystem.GetSettings();
-            if (settings.canvas.renderMode == RenderMode.ScreenSpaceOverlay) {
-                this.workCamera.enabled = false;
-            } else {
-                this.workCamera.enabled = true;
+
+            WindowSystemSettings settings = WindowSystem.GetSettings();
+            if (settings.canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+            {
+                workCamera.enabled = false;
             }
-            
+            else
+            {
+                workCamera.enabled = true;
+            }
         }
 
-        internal void ApplyDepth() {
+        internal void ApplyDepth()
+        {
+            float depth = WindowSystem.GetNextDepth(preferences.layer);
+            int canvasDepth = WindowSystem.GetNextCanvasDepth(preferences.layer);
+            float zDepth = WindowSystem.GetNextZDepth(preferences.layer);
 
-            var depth = WindowSystem.GetNextDepth(this.preferences.layer);
-            var canvasDepth = WindowSystem.GetNextCanvasDepth(this.preferences.layer);
-            var zDepth = WindowSystem.GetNextZDepth(this.preferences.layer);
+            currentDepth = depth;
+            currentZDepth = zDepth;
+            currentCanvasDepth = canvasDepth;
 
-            this.currentDepth = depth;
-            this.currentZDepth = zDepth;
-            this.currentCanvasDepth = canvasDepth;
-
-            var tr = this.transform;
-            this.workCamera.depth = depth;
-            var pos = tr.position;
+            Transform tr = transform;
+            workCamera.depth = depth;
+            Vector3 pos = tr.position;
             pos.z = zDepth;
             tr.position = pos;
-            
         }
 
-        #if UNITY_EDITOR
-        public override void ValidateEditor() {
-            
+#if UNITY_EDITOR
+        public override void ValidateEditor()
+        {
             base.ValidateEditor();
 
-            var helper = new UnityEngine.UI.Windows.Utilities.DirtyHelper(this);
-            if (this.workCamera == null) helper.SetObj(ref this.workCamera, this.GetComponent<Camera>());
-            if (this.workCamera == null) helper.SetObj(ref this.workCamera, this.GetComponentInChildren<Camera>(true));
-            if (this.workCamera != null) {
+            var helper = new DirtyHelper(this);
+            if (workCamera == null)
+            {
+                helper.SetObj(ref workCamera, GetComponent<Camera>());
+            }
 
-                var workCameraClearFlags = this.workCamera.clearFlags;
-                if (helper.SetEnum(ref workCameraClearFlags, CameraClearFlags.Depth) == true) {
-                    this.workCamera.clearFlags = workCameraClearFlags;
+            if (workCamera == null)
+            {
+                helper.SetObj(ref workCamera, GetComponentInChildren<Camera>(true));
+            }
+
+            if (workCamera != null)
+            {
+                CameraClearFlags workCameraClearFlags = workCamera.clearFlags;
+                if (helper.SetEnum(ref workCameraClearFlags, CameraClearFlags.Depth))
+                {
+                    workCamera.clearFlags = workCameraClearFlags;
                 }
-
             }
 
             helper.Apply();
-
         }
-        #endif
+#endif
 
-        public virtual void LoadAsync(InitialParameters initialParameters, System.Action onComplete) {
-
-            this.modules.LoadAsync(initialParameters, this, onComplete);
-
+        public virtual void LoadAsync(InitialParameters initialParameters, Action onComplete)
+        {
+            modules.LoadAsync(initialParameters, this, onComplete);
         }
 
-        public virtual WindowLayoutPreferences GetCurrentLayoutPreferences() {
-
+        public virtual WindowLayoutPreferences GetCurrentLayoutPreferences()
+        {
             return null;
-
         }
-
     }
-
 }

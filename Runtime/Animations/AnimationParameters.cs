@@ -1,119 +1,107 @@
-﻿namespace UnityEngine.UI.Windows.Modules {
+﻿using System;
+using UnityEngine.UI.Windows.Utilities;
 
-    using Utilities;
-    
-    public enum AnimationState {
-
+namespace UnityEngine.UI.Windows.Modules
+{
+    public enum AnimationState
+    {
         Current = 0,
         Reset = 1,
         Show = 2,
-        Hide = 3,
-
+        Hide = 3
     }
 
-    public abstract class AnimationParameters : MonoBehaviour {
-
+    [Serializable]
+    public abstract class AnimationParameters
+    {
         [Tooltip("Use config file or parameters at this component")]
         public AnimationParametersConfig config;
-        
-        [Space]
-        public float durationShow = 0.3f;
+
+        [Space] public float durationShow = 0.3f;
+
         public float durationHide = 0.3f;
-        public float delayShow = 0f;
-        public float delayHide = 0f;
+        public float delayShow;
+        public float delayHide;
         public Tweener.EaseFunction easeShow = Tweener.EaseFunction.Linear;
         public Tweener.EaseFunction easeHide = Tweener.EaseFunction.Linear;
-
-        public abstract class State {
-
-            public abstract void CopyFrom(State other);
-            public abstract void Recycle();
-
+        
+        public virtual void OnValidate()
+        {
         }
 
-        public abstract void OnValidate();
-
-        public float GetDuration(AnimationState animationState) {
-
+        public float GetDuration(AnimationState animationState)
+        {
             var delay = 0f;
-            switch (animationState) {
-
+            switch (animationState)
+            {
                 case AnimationState.Show:
-                    delay = this.durationShow;
+                    delay = durationShow;
                     break;
 
                 case AnimationState.Hide:
-                    delay = this.durationHide;
+                    delay = durationHide;
                     break;
-
             }
 
             return delay;
-
         }
 
-        public float GetDelay(AnimationState animationState) {
-
+        public float GetDelay(AnimationState animationState)
+        {
             var delay = 0f;
-            switch (animationState) {
-
+            switch (animationState)
+            {
                 case AnimationState.Show:
-                    delay = this.delayShow;
+                    delay = delayShow;
                     break;
 
                 case AnimationState.Hide:
-                    delay = this.delayHide;
+                    delay = delayHide;
                     break;
-
             }
 
             return delay;
-
         }
 
         public abstract State LerpState(State from, State to, float value);
 
         public abstract void ApplyState(State state);
 
-        public State GetState(AnimationState state, bool clone = false) {
-
+        public State GetState(AnimationState state, bool clone = false)
+        {
             State copy = null;
-            if (clone == true) {
-
-                copy = this.CreateState();
-
+            if (clone)
+            {
+                copy = CreateState();
             }
 
             State result = null;
-            switch (state) {
-
+            switch (state)
+            {
                 case AnimationState.Current:
-                    result = this.GetCurrentState();
+                    result = GetCurrentState();
                     break;
 
                 case AnimationState.Reset:
-                    result = this.GetResetState();
+                    result = GetResetState();
                     break;
 
                 case AnimationState.Show:
-                    result = this.GetInState();
+                    result = GetInState();
                     break;
 
                 case AnimationState.Hide:
-                    result = this.GetOutState();
+                    result = GetOutState();
                     break;
-
             }
 
-            if (clone == true) {
-                
+            if (clone)
+            {
                 copy.CopyFrom(result);
                 result = copy;
-
             }
 
             return result;
-
         }
 
         public abstract State CreateState();
@@ -122,6 +110,10 @@
         public abstract State GetInState();
         public abstract State GetOutState();
 
+        public abstract class State
+        {
+            public abstract void CopyFrom(State other);
+            public abstract void Recycle();
+        }
     }
-
 }

@@ -1,227 +1,202 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using Sirenix.OdinInspector;
+using UnityEngine.UI.Windows.Utilities;
 
-namespace UnityEngine.UI.Windows.Components {
-
-    using Utilities;
-
-    public interface IInteractable {
-
+namespace UnityEngine.UI.Windows.Components
+{
+    public interface IInteractable
+    {
         bool IsInteractable();
         void SetInteractable(bool state);
-
     }
 
-    public interface IInteractableButton : IInteractable {
+    public interface IInteractableButton : IInteractable
+    {
+        void SetCallback(Action callback);
+        void AddCallback(Action callback);
+        void RemoveCallback(Action callback);
 
-        void SetCallback(System.Action callback);
-        void AddCallback(System.Action callback);
-        void RemoveCallback(System.Action callback);
-
-        void SetCallback(System.Action<ButtonComponent> callback);
-        void AddCallback(System.Action<ButtonComponent> callback);
-        void RemoveCallback(System.Action<ButtonComponent> callback);
+        void SetCallback(Action<ButtonComponent> callback);
+        void AddCallback(Action<ButtonComponent> callback);
+        void RemoveCallback(Action<ButtonComponent> callback);
 
         void RemoveCallbacks();
-
     }
-    
-    public class ButtonComponent : GenericComponent, IInteractableButton, ISearchComponentByTypeEditor, ISearchComponentByTypeSingleEditor {
 
-        System.Type ISearchComponentByTypeEditor.GetSearchType() {
-
-           return typeof(ButtonComponentModule);
-
-        }
-
-        IList ISearchComponentByTypeSingleEditor.GetSearchTypeArray() {
-
-           return this.componentModules.modules;
-
-        }
-        
-        [RequiredReference]
+    public class ButtonComponent : GenericComponent, IInteractableButton, ISearchComponentByTypeEditor,
+        ISearchComponentByTypeSingleEditor
+    {
+        [TabGroup("Basic")] [RequiredReference]
         public Button button;
 
         private CallbackRegistries callbackRegistries;
-        
-        internal override void OnInitInternal() {
-            
-            this.button.onClick.AddListener(this.DoClickInternal);
-            this.callbackRegistries.Initialize();
-            
+
+        public void SetInteractable(bool state)
+        {
+            button.interactable = state;
+            componentModules.OnInteractableChanged(state);
+        }
+
+        public bool IsInteractable()
+        {
+            return button.interactable;
+        }
+
+        public void SetCallback(Action callback)
+        {
+            RemoveCallbacks();
+            AddCallback(callback);
+        }
+
+        public void SetCallback(Action<ButtonComponent> callback)
+        {
+            RemoveCallbacks();
+            AddCallback(callback);
+        }
+
+        public void AddCallback(Action callback)
+        {
+            callbackRegistries.Add(callback);
+        }
+
+        public void AddCallback(Action<ButtonComponent> callback)
+        {
+            AddCallback(new WithInstance {component = this, action = callback}, cb => cb.action.Invoke(cb.component));
+        }
+
+        public void RemoveCallback(Action callback)
+        {
+            callbackRegistries.Remove(callback);
+        }
+
+        public void RemoveCallback(Action<ButtonComponent> callback)
+        {
+            callbackRegistries.Remove(new WithInstance {component = this, action = callback}, null);
+        }
+
+        public virtual void RemoveCallbacks()
+        {
+            callbackRegistries.Clear();
+        }
+
+        Type ISearchComponentByTypeEditor.GetSearchType()
+        {
+            return typeof(ButtonComponentModule);
+        }
+
+        IList ISearchComponentByTypeSingleEditor.GetSearchTypeArray()
+        {
+            return componentModules.modules;
+        }
+
+        internal override void OnInitInternal()
+        {
+            button.onClick.AddListener(DoClickInternal);
+            callbackRegistries.Initialize();
+
             base.OnInitInternal();
-            
         }
 
-        internal override void OnDeInitInternal() {
-            
+        internal override void OnDeInitInternal()
+        {
             base.OnDeInitInternal();
-            
-            this.ResetInstance();
-            this.callbackRegistries.DeInitialize();
-            
+
+            ResetInstance();
+            callbackRegistries.DeInitialize();
         }
 
-        private void ResetInstance() {
-            
-            this.button.onClick.RemoveAllListeners();
-            this.RemoveCallbacks();
-            
-        }
-        
-        public void SetInteractable(bool state) {
-
-            this.button.interactable = state;
-            this.componentModules.OnInteractableChanged(state);
-
-        }
-        
-        public bool IsInteractable() {
-
-            return this.button.interactable;
-
+        private void ResetInstance()
+        {
+            button.onClick.RemoveAllListeners();
+            RemoveCallbacks();
         }
 
-        public void RaiseClick() {
-            
-            this.DoClick();
-            
+        public void RaiseClick()
+        {
+            DoClick();
         }
 
-        public bool CanClick() {
-            
-            if (this.GetWindow().GetState() != ObjectState.Showing &&
-                this.GetWindow().GetState() != ObjectState.Shown) {
-
-                Debug.LogWarning("Couldn't send click because window is in `" + this.GetWindow().GetState().ToString() + "` state.", this);
+        public bool CanClick()
+        {
+            if (GetWindow().GetState() != ObjectState.Showing &&
+                GetWindow().GetState() != ObjectState.Shown)
+            {
+                Debug.LogWarning("Couldn't send click because window is in `" + GetWindow().GetState() + "` state.",
+                    this);
                 return false;
-
             }
 
-            if (this.GetState() != ObjectState.Showing &&
-                this.GetState() != ObjectState.Shown) {
-
-                Debug.LogWarning("Couldn't send click because component is in `" + this.GetState().ToString() + "` state.", this);
+            if (GetState() != ObjectState.Showing &&
+                GetState() != ObjectState.Shown)
+            {
+                Debug.LogWarning("Couldn't send click because component is in `" + GetState() + "` state.", this);
                 return false;
-
             }
 
             return WindowSystem.CanInteractWith(this);
-
         }
-        
-        internal void DoClickInternal() {
-            
-            if (this.callbackRegistries.Count == 0) {
-                
+
+        internal void DoClickInternal()
+        {
+            if (callbackRegistries.Count == 0)
+            {
                 return;
-                
             }
 
-            if (this.CanClick() == true) {
-
+            if (CanClick())
+            {
                 WindowSystem.InteractWith(this);
-                
-                this.DoClick();
 
+                DoClick();
             }
-
         }
 
-        protected virtual void DoClick() {
-
-            this.callbackRegistries.Invoke();
-
-        }
-        
-        private struct WithInstance : System.IEquatable<WithInstance> {
-
-            public ButtonComponent component;
-            public System.Action<ButtonComponent> action;
-
-            public bool Equals(WithInstance other) {
-                return this.component == other.component && this.action == other.action;
-            }
-
+        protected virtual void DoClick()
+        {
+            callbackRegistries.Invoke();
         }
 
-        public void SetCallback<TState>(TState state, System.Action<TState> callback) where TState : System.IEquatable<TState> {
-
-            this.RemoveCallbacks();
-            this.AddCallback(state, callback);
-
+        public void SetCallback<TState>(TState state, Action<TState> callback) where TState : IEquatable<TState>
+        {
+            RemoveCallbacks();
+            AddCallback(state, callback);
         }
 
-        public void SetCallback(System.Action callback) {
-
-            this.RemoveCallbacks();
-            this.AddCallback(callback);
-
+        public void AddCallback<TState>(TState state, Action<TState> callback) where TState : IEquatable<TState>
+        {
+            callbackRegistries.Add(state, callback);
         }
 
-        public void SetCallback(System.Action<ButtonComponent> callback) {
-
-            this.RemoveCallbacks();
-            this.AddCallback(callback);
-
+        public void RemoveCallback<TState>(TState state) where TState : IEquatable<TState>
+        {
+            callbackRegistries.Remove(state, null);
         }
 
-        public void AddCallback(System.Action callback) {
-
-            this.callbackRegistries.Add(callback);
-
+        public void RemoveCallback<TState>(Action<TState> callback) where TState : IEquatable<TState>
+        {
+            callbackRegistries.Remove(default, callback);
         }
 
-        public void AddCallback<TState>(TState state, System.Action<TState> callback) where TState : System.IEquatable<TState> {
-
-            this.callbackRegistries.Add(state, callback);
-
-        }
-
-        public void AddCallback(System.Action<ButtonComponent> callback) {
-
-            this.AddCallback(new WithInstance() { component = this, action = callback, }, cb => cb.action.Invoke(cb.component));
-
-        }
-
-        public void RemoveCallback(System.Action callback) {
-
-            this.callbackRegistries.Remove(callback);
-
-        }
-
-        public void RemoveCallback(System.Action<ButtonComponent> callback) {
-
-            this.callbackRegistries.Remove(new WithInstance() { component = this, action = callback, }, null);
-
-        }
-
-        public void RemoveCallback<TState>(TState state) where TState : System.IEquatable<TState> {
-
-            this.callbackRegistries.Remove(state, null);
-
-        }
-
-        public void RemoveCallback<TState>(System.Action<TState> callback) where TState : System.IEquatable<TState> {
-
-            this.callbackRegistries.Remove(default, callback);
-
-        }
-
-        public virtual void RemoveCallbacks() {
-            
-            this.callbackRegistries.Clear();
-            
-        }
-
-        public override void ValidateEditor() {
-            
+        public override void ValidateEditor()
+        {
             base.ValidateEditor();
 
-            if (this.button == null) this.button = this.GetComponent<Button>();
-
+            if (button == null)
+            {
+                button = GetComponent<Button>();
+            }
         }
 
-    }
+        private struct WithInstance : IEquatable<WithInstance>
+        {
+            public ButtonComponent component;
+            public Action<ButtonComponent> action;
 
+            public bool Equals(WithInstance other)
+            {
+                return component == other.component && action == other.action;
+            }
+        }
+    }
 }

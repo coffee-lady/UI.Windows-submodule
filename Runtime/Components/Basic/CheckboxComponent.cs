@@ -1,202 +1,192 @@
-﻿namespace UnityEngine.UI.Windows.Components {
+﻿using System;
+using Sirenix.OdinInspector;
 
-    public interface ICheckboxGroup {
-
+namespace UnityEngine.UI.Windows.Components
+{
+    public interface ICheckboxGroup
+    {
         void OnChecked(CheckboxComponent checkbox);
         bool CanBeUnchecked(CheckboxComponent checkbox);
-
     }
 
-    public class CheckboxComponent : ButtonComponent {
-
+    public class CheckboxComponent : ButtonComponent
+    {
         public WindowComponent checkedContainer;
         public WindowComponent uncheckedContainer;
-        public bool isChecked;
-        public bool autoToggle = true;
+        [TabGroup("Basic")] public bool isChecked;
+        [TabGroup("Basic")] public bool autoToggle = true;
         public ICheckboxGroup group;
 
-        private System.Action<bool> callback;
-        private System.Action<CheckboxComponent, bool> callbackWithInstance;
+        private Action<bool> callback;
+        private Action<CheckboxComponent, bool> callbackWithInstance;
 
-        public override void ValidateEditor() {
-
+        public override void ValidateEditor()
+        {
             base.ValidateEditor();
 
-            if (this.checkedContainer != null) {
-
-                this.checkedContainer.hiddenByDefault = true;
-                this.checkedContainer.AddEditorParametersRegistry(new EditorParametersRegistry(this) {
-                    holdHiddenByDefault = true,
+            if (checkedContainer != null)
+            {
+                checkedContainer.hiddenByDefault = true;
+                checkedContainer.AddEditorParametersRegistry(new EditorParametersRegistry(this)
+                {
+                    holdHiddenByDefault = true
                 });
-
             }
 
-            if (this.uncheckedContainer != null) {
-
-                this.uncheckedContainer.hiddenByDefault = true;
-                this.uncheckedContainer.AddEditorParametersRegistry(new EditorParametersRegistry(this) {
-                    holdHiddenByDefault = true,
+            if (uncheckedContainer != null)
+            {
+                uncheckedContainer.hiddenByDefault = true;
+                uncheckedContainer.AddEditorParametersRegistry(new EditorParametersRegistry(this)
+                {
+                    holdHiddenByDefault = true
                 });
-
             }
 
             //this.UpdateCheckState();
-
         }
 
-        internal override void OnInitInternal() {
-
+        internal override void OnInitInternal()
+        {
             base.OnInitInternal();
 
-            if (this.autoToggle == true) {
-
-                this.button.onClick.AddListener(this.ToggleInternal);
-
+            if (autoToggle)
+            {
+                button.onClick.AddListener(ToggleInternal);
             }
-
         }
 
-        internal override void OnDeInitInternal() {
-            
-            this.button.onClick.RemoveAllListeners();
+        internal override void OnDeInitInternal()
+        {
+            button.onClick.RemoveAllListeners();
 
             base.OnDeInitInternal();
-
         }
 
-        internal override void OnShowBeginInternal() {
-
+        internal override void OnShowBeginInternal()
+        {
             base.OnShowBeginInternal();
 
-            this.SetCheckedState(this.isChecked);
-
+            SetCheckedState(isChecked);
         }
 
-        public void Toggle() {
-
-            this.SetCheckedState(!this.isChecked);
-
+        public void Toggle()
+        {
+            SetCheckedState(!isChecked);
         }
 
-        internal void ToggleInternal() {
-
-            this.SetCheckedStateInternal(!this.isChecked);
-
+        internal void ToggleInternal()
+        {
+            SetCheckedStateInternal(!isChecked);
         }
 
-        internal void SetCheckedStateInternal(bool state, bool call = true, bool checkGroup = true) {
-
-            if (this.CanClick() == false) return;
+        internal void SetCheckedStateInternal(bool state, bool call = true, bool checkGroup = true)
+        {
+            if (CanClick() == false)
+            {
+                return;
+            }
 
             WindowSystem.InteractWith(this);
-            
-            this.SetCheckedState(state, call, checkGroup);
-            
+
+            SetCheckedState(state, call, checkGroup);
         }
 
-        public void SetCheckedState(bool state, bool call = true, bool checkGroup = true) {
-
-            var stateChanged = this.isChecked != state;
-            this.isChecked = state;
-            if (checkGroup == true && this.group != null) {
-                if (state == false) {
-                    if (this.group.CanBeUnchecked(this) == false) {
-                        this.isChecked = true;
+        public void SetCheckedState(bool state, bool call = true, bool checkGroup = true)
+        {
+            bool stateChanged = isChecked != state;
+            isChecked = state;
+            if (checkGroup && group != null)
+            {
+                if (state == false)
+                {
+                    if (group.CanBeUnchecked(this) == false)
+                    {
+                        isChecked = true;
                         state = true;
-                        if (stateChanged == true) {
+                        if (stateChanged)
+                        {
                             stateChanged = false;
                         }
                     }
-                } else {
-                    this.group.OnChecked(this);
+                }
+                else
+                {
+                    group.OnChecked(this);
                 }
             }
 
-            this.UpdateCheckState();
+            UpdateCheckState();
 
-            if (call == true && stateChanged == true) {
-
-                if (this.callback != null) {
-                    this.callback.Invoke(state);
+            if (call && stateChanged)
+            {
+                if (callback != null)
+                {
+                    callback.Invoke(state);
                 }
 
-                if (this.callbackWithInstance != null) {
-                    this.callbackWithInstance.Invoke(this, state);
+                if (callbackWithInstance != null)
+                {
+                    callbackWithInstance.Invoke(this, state);
                 }
-
             }
-
         }
 
-        public void SetGroup(ICheckboxGroup group) {
-            
+        public void SetGroup(ICheckboxGroup group)
+        {
             this.group = group;
-            
         }
 
-        private void UpdateCheckState() {
-
-            if (this.checkedContainer != null) {
-                
-                this.checkedContainer.ShowHide(this.isChecked == true);
-                
+        private void UpdateCheckState()
+        {
+            if (checkedContainer != null)
+            {
+                checkedContainer.ShowHide(isChecked);
             }
 
-            if (this.uncheckedContainer != null) {
-                
-                this.uncheckedContainer.ShowHide(this.isChecked == false);
-                
+            if (uncheckedContainer != null)
+            {
+                uncheckedContainer.ShowHide(isChecked == false);
             }
-
         }
 
-        public void SetCallback(System.Action<bool> callback) {
-
-            this.RemoveCallbacks();
-            this.AddCallback(callback);
-
+        public void SetCallback(Action<bool> callback)
+        {
+            RemoveCallbacks();
+            AddCallback(callback);
         }
 
-        public void SetCallback(System.Action<CheckboxComponent, bool> callback) {
-
-            this.RemoveCallbacks();
-            this.AddCallback(callback);
-
+        public void SetCallback(Action<CheckboxComponent, bool> callback)
+        {
+            RemoveCallbacks();
+            AddCallback(callback);
         }
 
-        public void AddCallback(System.Action<bool> callback) {
-
+        public void AddCallback(Action<bool> callback)
+        {
             this.callback += callback;
-
         }
 
-        public void AddCallback(System.Action<CheckboxComponent, bool> callback) {
-
-            this.callbackWithInstance += callback;
-
+        public void AddCallback(Action<CheckboxComponent, bool> callback)
+        {
+            callbackWithInstance += callback;
         }
 
-        public void RemoveCallback(System.Action<bool> callback) {
-
+        public void RemoveCallback(Action<bool> callback)
+        {
             this.callback -= callback;
-
         }
 
-        public void RemoveCallback(System.Action<CheckboxComponent, bool> callback) {
-
-            this.callbackWithInstance -= callback;
-
+        public void RemoveCallback(Action<CheckboxComponent, bool> callback)
+        {
+            callbackWithInstance -= callback;
         }
 
-        public override void RemoveCallbacks() {
-
+        public override void RemoveCallbacks()
+        {
             base.RemoveCallbacks();
 
-            this.callback = null;
-            this.callbackWithInstance = null;
-
+            callback = null;
+            callbackWithInstance = null;
         }
-
     }
-
 }

@@ -1,11 +1,10 @@
-﻿
-namespace UnityEngine.UI.Windows.Utilities {
+﻿using System;
 
-    [System.Serializable]
-    public struct UIWSLayer {
-
+namespace UnityEngine.UI.Windows.Utilities
+{
+    [Serializable]
+    public struct UIWSLayer
+    {
         public int value;
-
     }
-
 }

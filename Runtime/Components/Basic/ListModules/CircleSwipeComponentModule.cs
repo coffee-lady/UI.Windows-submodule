@@ -1,11 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine.EventSystems;
 
-namespace UnityEngine.UI.Windows {
-
+namespace UnityEngine.UI.Windows
+{
     [ComponentModuleDisplayName("Circle swipe")]
-    public class CircleSwipeComponentModule : ListComponentDraggableModule {
-
+    public class CircleSwipeComponentModule : ListComponentDraggableModule
+    {
         public RectTransform container;
 
         public float snapDuration = 0.2f;
@@ -14,96 +15,95 @@ namespace UnityEngine.UI.Windows {
         private Coroutine smoothLerpCoroutine;
         private int currentItemIndex;
 
-        public System.Action<int> onSelectedPageChanged;
+        public Action<int> onSelectedPageChanged;
 
-        public override void OnInit() {
-
+        public override void OnInit()
+        {
             base.OnInit();
 
-            this.UpdatePages();
-
+            UpdatePages();
         }
 
-        public override void OnShowEnd() {
+        public override void OnShowEnd()
+        {
             base.OnShowEnd();
 
             var sectorCount = 0;
 
-            for (var i = 0; i < this.container.childCount; ++i) {
-                if (this.container.GetChild(i).gameObject.activeSelf) {
+            for (var i = 0; i < container.childCount; ++i)
+            {
+                if (container.GetChild(i).gameObject.activeSelf)
+                {
                     ++sectorCount;
                 }
             }
 
-            if (sectorCount == 0) {
+            if (sectorCount == 0)
+            {
                 return;
             }
 
-            this.rotationAngle = 360f / sectorCount;
-
+            rotationAngle = 360f / sectorCount;
         }
 
-        private void UpdatePages() {
-
-            this.currentItemIndex = 0;
-            this.onSelectedPageChanged?.Invoke(this.currentItemIndex);
-
+        private void UpdatePages()
+        {
+            currentItemIndex = 0;
+            onSelectedPageChanged?.Invoke(currentItemIndex);
         }
 
-        private IEnumerator SmoothLerp() {
-
+        private IEnumerator SmoothLerp()
+        {
             var timer = 0f;
-            var originRotation = this.container.localRotation;
+            Quaternion originRotation = container.localRotation;
 
-            var targetRotation = Quaternion.Euler(originRotation.eulerAngles.x, originRotation.eulerAngles.y, this.currentItemIndex * this.rotationAngle);
+            Quaternion targetRotation = Quaternion.Euler(originRotation.eulerAngles.x, originRotation.eulerAngles.y,
+                currentItemIndex * rotationAngle);
 
-            while (timer < 1f) {
-                timer += Time.deltaTime / this.snapDuration;
-                this.container.localRotation = Quaternion.Lerp(originRotation, targetRotation, timer);
+            while (timer < 1f)
+            {
+                timer += Time.deltaTime / snapDuration;
+                container.localRotation = Quaternion.Lerp(originRotation, targetRotation, timer);
                 yield return null;
             }
 
-            this.container.localRotation = targetRotation;
-            this.onSelectedPageChanged?.Invoke(this.currentItemIndex);
-
+            container.localRotation = targetRotation;
+            onSelectedPageChanged?.Invoke(currentItemIndex);
         }
 
-        public override void OnBeginDrag(PointerEventData data) {
-
-            if (this.isActiveAndEnabled == false) {
+        public override void OnBeginDrag(PointerEventData data)
+        {
+            if (windowComponent.isActiveAndEnabled == false)
+            {
                 return;
             }
 
-            if (this.smoothLerpCoroutine != null) {
-                this.StopCoroutine(this.smoothLerpCoroutine);
+            if (smoothLerpCoroutine != null)
+            {
+                windowComponent.StopCoroutine(smoothLerpCoroutine);
             }
-
         }
 
-        public override void OnEndDrag(PointerEventData data) {
-
-            if (this.isActiveAndEnabled == false) {
+        public override void OnEndDrag(PointerEventData data)
+        {
+            if (windowComponent.isActiveAndEnabled == false)
+            {
                 return;
             }
 
-            var sector = Mathf.Round(this.container.localRotation.eulerAngles.z / this.rotationAngle);
-            if (sector >= 360f / this.rotationAngle) {
-
+            float sector = Mathf.Round(container.localRotation.eulerAngles.z / rotationAngle);
+            if (sector >= 360f / rotationAngle)
+            {
                 sector = 0f;
-
             }
 
-            this.currentItemIndex = (int)sector;
-            this.smoothLerpCoroutine = this.StartCoroutine(this.SmoothLerp());
-
+            currentItemIndex = (int) sector;
+            smoothLerpCoroutine = windowComponent.StartCoroutine(SmoothLerp());
         }
 
-        public override void OnDrag(PointerEventData eventData) {
-
-            this.container.Rotate(0f, 0f, -eventData.delta.x / 10f, Space.Self);
-
+        public override void OnDrag(PointerEventData eventData)
+        {
+            container.Rotate(0f, 0f, -eventData.delta.x / 10f, Space.Self);
         }
-
     }
-
 }

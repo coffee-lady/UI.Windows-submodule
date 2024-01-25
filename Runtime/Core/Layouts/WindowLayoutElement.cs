@@ -1,16 +1,13 @@
-﻿namespace UnityEngine.UI.Windows {
+﻿using Sirenix.OdinInspector;
 
-    public class WindowLayoutElement : WindowComponent, ILayoutInstance {
+namespace UnityEngine.UI.Windows
+{
+    public class WindowLayoutElement : WindowComponent, ILayoutInstance
+    {
+        [TabGroup("Basic")] public int tagId;
+        [TabGroup("Basic")] public WindowLayout innerLayout;
+        [TabGroup("Basic")] public bool hideInScreen;
 
-        public int tagId;
-        public WindowLayout innerLayout;
-        public bool hideInScreen;
-
-        WindowLayout ILayoutInstance.windowLayoutInstance {
-            get;
-            set;
-        }
-
+        WindowLayout ILayoutInstance.windowLayoutInstance { get; set; }
     }
-
 }

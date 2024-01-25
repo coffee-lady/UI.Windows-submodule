@@ -1,118 +1,99 @@
 ﻿using System;
 using UnityEngine.EventSystems;
 
-namespace UnityEngine.UI.Windows.Components.DragAndDropModules {
+namespace UnityEngine.UI.Windows.Components.DragAndDropModules
+{
+    public class DragComponentModule : WindowComponentModule, IBeginDragHandler, IEndDragHandler, IDragHandler
+    {
+        private Action<PointerEventData> onDragCallback;
+        private Action<PointerEventData> onBeginDragCallback;
+        private Action<PointerEventData> onEndDragCallback;
 
-	public class DragComponentModule : WindowComponentModule, IBeginDragHandler, IEndDragHandler, IDragHandler {
+        public virtual void OnBeginDrag(PointerEventData eventData)
+        {
+            onBeginDragCallback?.Invoke(eventData);
+        }
 
-		private Action<PointerEventData> onDragCallback;
-		private Action<PointerEventData> onBeginDragCallback;
-		private Action<PointerEventData> onEndDragCallback;
+        public virtual void OnDrag(PointerEventData eventData)
+        {
+            onDragCallback?.Invoke(eventData);
+        }
 
-		public void SetDragCallback(System.Action<PointerEventData> callback) {
+        public virtual void OnEndDrag(PointerEventData eventData)
+        {
+            onEndDragCallback?.Invoke(eventData);
+        }
 
-			this.onDragCallback = callback;
+        public void SetDragCallback(Action<PointerEventData> callback)
+        {
+            onDragCallback = callback;
+        }
 
-		}
+        public void SetBeginDragCallback(Action<PointerEventData> callback)
+        {
+            onBeginDragCallback = callback;
+        }
 
-		public void SetBeginDragCallback(System.Action<PointerEventData> callback) {
+        public void SetEndDragCallback(Action<PointerEventData> callback)
+        {
+            onEndDragCallback = callback;
+        }
 
-			this.onBeginDragCallback = callback;
+        public void AddDragCallback(Action<PointerEventData> callback)
+        {
+            onDragCallback += callback;
+        }
 
-		}
+        public void AddBeginDragCallback(Action<PointerEventData> callback)
+        {
+            onBeginDragCallback += callback;
+        }
 
-		public void SetEndDragCallback(System.Action<PointerEventData> callback) {
+        public void AddEndDragCallback(Action<PointerEventData> callback)
+        {
+            onEndDragCallback += callback;
+        }
 
-			this.onEndDragCallback = callback;
+        public void RemoveDragCallback(Action<PointerEventData> callback)
+        {
+            onDragCallback -= callback;
+        }
 
-		}
+        public void RemoveBeginDragCallback(Action<PointerEventData> callback)
+        {
+            onBeginDragCallback -= callback;
+        }
 
-		public void AddDragCallback(System.Action<PointerEventData> callback) {
+        public void RemoveEndDragCallback(Action<PointerEventData> callback)
+        {
+            onEndDragCallback -= callback;
+        }
 
-			this.onDragCallback += callback;
+        public void RemoveAllDragCallbacks()
+        {
+            onDragCallback = null;
+        }
 
-		}
+        public void RemoveAllBeginDragCallbacks()
+        {
+            onBeginDragCallback = null;
+        }
 
-		public void AddBeginDragCallback(System.Action<PointerEventData> callback) {
+        public void RemoveAllEndDragCallbacks()
+        {
+            onEndDragCallback = null;
+        }
 
-			this.onBeginDragCallback += callback;
+        private Transform GetParentCanvasTransform()
+        {
+            GameObject currentGameObject = windowComponent.gameObject;
 
-		}
+            while (currentGameObject.GetComponent<Canvas>() == null)
+            {
+                currentGameObject = currentGameObject.transform.parent.gameObject;
+            }
 
-		public void AddEndDragCallback(System.Action<PointerEventData> callback) {
-
-			this.onEndDragCallback += callback;
-
-		}
-
-		public void RemoveDragCallback(System.Action<PointerEventData> callback) {
-
-			this.onDragCallback -= callback;
-
-		}
-
-		public void RemoveBeginDragCallback(System.Action<PointerEventData> callback) {
-
-			this.onBeginDragCallback -= callback;
-
-		}
-
-		public void RemoveEndDragCallback(System.Action<PointerEventData> callback) {
-
-			this.onEndDragCallback -= callback;
-
-		}
-
-		public void RemoveAllDragCallbacks() {
-
-			this.onDragCallback = null;
-
-		}
-
-		public void RemoveAllBeginDragCallbacks() {
-
-			this.onBeginDragCallback = null;
-
-		}
-
-		public void RemoveAllEndDragCallbacks() {
-
-			this.onEndDragCallback = null;
-
-		}
-
-		public virtual void OnBeginDrag(PointerEventData eventData) {
-
-			this.onBeginDragCallback?.Invoke(eventData);
-
-		}
-
-		private Transform GetParentCanvasTransform() {
-
-			var currentGameObject = gameObject;
-
-			while (currentGameObject.GetComponent<Canvas>() == null) {
-
-				currentGameObject = currentGameObject.transform.parent.gameObject;
-
-			}
-
-			return currentGameObject.transform;
-
-		}
-
-		public virtual void OnDrag(PointerEventData eventData) {
-
-			onDragCallback?.Invoke(eventData);
-
-		}
-
-		public virtual void OnEndDrag(PointerEventData eventData) {
-
-			onEndDragCallback?.Invoke(eventData);
-
-		}
-
-	}
-
+            return currentGameObject.transform;
+        }
+    }
 }
